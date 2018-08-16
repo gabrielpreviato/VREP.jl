@@ -1,0 +1,7 @@
+authors = ["Gabriel Previato <gabriel.previato@gmail.com>"]
+name = "VREP"
+uuid = "b2820104-a0f9-11e8-2ece-cb025699b6b0"
+version = "0.1.0"
+licence = "MIT"
+
+[deps]
