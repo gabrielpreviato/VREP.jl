@@ -47,7 +47,7 @@ function simxSetJointTargetVelocity(clientID::Cint, jointHandle::Cint, targetVel
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
-    return ccall((:simxSetJointTargetVelocity, "remoteApi.so"), Cint, (Cint, Cfloat, Cint), clientID, jointHandle, targetVelocity, operationMode)
+    return ccall((:simxSetJointTargetVelocity, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, targetVelocity, operationMode)
 end
 
 function simxSetJointTargetPosition(clientID, jointHandle, targetPosition::Cfloat, operationMode)
@@ -84,8 +84,8 @@ end
 
 function simxReadForceSensor(clientID, forceSensorHandle, operationMode)
     #=
-    =#
     Please have a look at the function description/documentation in the V-REP user manual
+    =#
     state = Cuchar
     forceVector = Array{Cfloat, 1}(undef, 3)
     torqueVector = Array{Cfloat, 1}(undef, 3)
