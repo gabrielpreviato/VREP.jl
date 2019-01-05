@@ -100,31 +100,62 @@ function simxBreakForceSensor(clientID, forceSensorHandle, operationMode)
     return ccall((:simxBreakForceSensor, "remoteApi.so"), Cint, (Cint, Cint, Cint), clientID, forceSensorHandle, operationMode)
 end
 
+function simxReleaseBuffer(buffer)
+    #=
+    Please have a look at the function description/documentation in the V-REP user manual
+    =#
+
+    return ccall((:simxReleaseBuffer, "./remoteApi.so"), Cvoid, (Ptr{Cvoid},), buffer)
+end
+
 function simxReadVisionSensor(clientID, sensorHandle, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
-    #detectionState = ct.c_ubyte()
-    detectionState = Cuchar
-    #auxValues      = ct.POINTER(ct.c_float)()
-    auxValues = Ref{Cfloat}
-    #auxValuesCount = ct.POINTER(ct.c_int)()
-    auxValuesCount = Ref{Cint}
-    ret = ccall((:simxReadVisionSensor, "remoteApi.so"), Cint, (Cint, Cint, Cuchar, Ref{Cfloat}, Ref{Cint}, Cint), clientID, sensorHandle, detectionState, auxValues, auxValuesCount, operationMode)
+    detectionState = Ref{Cuchar}()
+    auxValues = Ref{Ptr{Cfloat}}()
+    auxValuesCount = Ref{Ptr{Cint}}()
 
-    auxValues2 = []
-    if ret == 0
-        s = 1
-        for i = 1:auxValuesCount[1]
-            auxValues2.append(auxValues[s : s + auxValuesCount[i+1] - 1])
-            s += auxValuesCount[i+1]
+    ret = ccall((:simxReadVisionSensor, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cuchar}, Ptr{Ptr{Cfloat}}, Ptr{Ptr{Cint}}, Cint), clientID, sensorHandle, detectionState, auxValues, auxValuesCount, operationMode)
+
+    auxValues2 = Array{Array{Float32, 1}, 1}()
+
+    if ret == 0 && detectionState != 0
+        if auxValuesCount[] != C_NULL && auxValuesCount[] != 0
+            wrapped_auxValuesCount_size = unsafe_load(auxValuesCount[], 1)
+            wrapped_auxValuesCount = unsafe_wrap(Array, auxValuesCount[], 1 + wrapped_auxValuesCount_size)[2:end]
+
+            wrapped_auxValues = unsafe_wrap(Array, auxValues[], sum(wrapped_auxValuesCount))
+
+            s = 1
+            for i in wrapped_auxValuesCount
+                push!(auxValues2, wrapped_auxValues[s:s + i - 1])
+                s += i
+            end
         end
 
         #free C buffers
-        c_ReleaseBuffer(auxValues)
-        c_ReleaseBuffer(auxValuesCount)
+        simxReleaseBuffer(auxValues[])
+        simxReleaseBuffer(auxValuesCount[])
     end
 
     return ret, Bool(detectionState != 0), auxValues2
+end
+
+function simxStart(connectionAddress, connectionPort, waitUntilConnected, doNotReconnectOnceDisconnected, timeOutInMs, commThreadCycleInMs)
+    #=
+    Please have a look at the function description/documentation in the V-REP user manual
+    =#
+
+    ret = ccall((:simxStart, "./remoteApi.so"), Cint, (Cstring, Cint, Cuchar, Cuchar, Cint, Cint), connectionAddress, connectionPort, waitUntilConnected, doNotReconnectOnceDisconnected, timeOutInMs, commThreadCycleInMs)
+    return ret
+end
+
+function simxFinish(clientID)
+    #=
+    Please have a look at the function description/documentation in the V-REP user manual
+    =#
+
+    return ccall((:simxFinish, "./remoteApi.so"), Cvoid, (Cint,), clientID)
 end

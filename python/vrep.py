@@ -240,6 +240,9 @@ def simxReadVisionSensor(clientID, sensorHandle, operationMode):
     auxValuesCount = ct.POINTER(ct.c_int)()
     ret = c_ReadVisionSensor(clientID, sensorHandle, ct.byref(detectionState), ct.byref(auxValues), ct.byref(auxValuesCount), operationMode)
 
+    print(auxValuesCount[0])
+    print(auxValuesCount[0])
+
     auxValues2 = []
     if ret == 0:
         s = 0
