@@ -2,10 +2,10 @@ function simxGetJointPosition(clientID, jointHandle, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
-    position = Ref{Cfloat}
-    ret = ccall((:simxGetJointPosition, "remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, position, operationMode)
 
-    return ret, position
+    position = Ref{Cfloat}(0.0)
+
+    return ccall((:simxGetJointPosition, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, position, operationMode), position[]
 end
 
 function simxSetJointPosition(clientID, jointHandle, position, operationMode)
@@ -13,8 +13,7 @@ function simxSetJointPosition(clientID, jointHandle, position, operationMode)
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
-    ret = ccall((:simxSetJointPosition, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, position, operationMode)
-    return ret
+    return ccall((:simxSetJointPosition, "./remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, position, operationMode)
 end
 
 function simxGetJointMatrix(clientID, jointHandle, operationMode)
@@ -23,81 +22,86 @@ function simxGetJointMatrix(clientID, jointHandle, operationMode)
     =#
 
     matrix = Array{Cfloat, 1}(undef, 12)
-    ret = ccall((:simxGetJointMatrix, "remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, matrix, operationMode)
 
-    return ret, matrix
+    return ccall((:simxGetJointMatrix, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, matrix, operationMode), matrix
 end
 
-function simxSetSphericalJointMatrix(clientID::Cint, jointHandle::Cint, matrix::Array{Cfloat, 1}, operationMode::Cint)
+function simxSetSphericalJointMatrix(clientID, jointHandle, matrix, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
     if (matrix.ndims == 1 && size(matrix, 1) == 12)
-        return ccall((:simxSetSphericalJointMatrix, "remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, matrix, operationMode)
+        return ccall((:simxSetSphericalJointMatrix, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, matrix, operationMode)
     else
         println("Passing Array with different size as expected (expected Array with size 12, received " + size(matrix, 1) + "). Matrix's values may be compromised")
-        return ccall((:simxSetSphericalJointMatrix, "remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, matrix, operationMode)
+        return ccall((:simxSetSphericalJointMatrix, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, matrix, operationMode)
         #throw(MethodError(""))
     end
 end
 
-function simxSetJointTargetVelocity(clientID::Cint, jointHandle::Cint, targetVelocity::Cfloat, operationMode::Cint)
+function simxSetJointTargetVelocity(clientID, jointHandle, targetVelocity, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
-    return ccall((:simxSetJointTargetVelocity, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, targetVelocity, operationMode)
+    return ccall((:simxSetJointTargetVelocity, "./remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, targetVelocity, operationMode)
 end
 
-function simxSetJointTargetPosition(clientID, jointHandle, targetPosition::Cfloat, operationMode)
+function simxSetJointTargetPosition(clientID, jointHandle, targetPosition, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
-    return ccall((:simxSetJointTargetPosition, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, targetPosition, operationMode)
+    return ccall((:simxSetJointTargetPosition, "./remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, targetPosition, operationMode)
 end
 
 function simxJointGetForce(clientID, jointHandle, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
+
     println("DEPRECATED. Use simxGetJointForce instead.")
-    force = Cfloat
-    return ccall((:simxGetJointForce, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, force, operationMode), force
+    force = Ref{Cfloat}
+
+    return ccall((:simxGetJointForce, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, force, operationMode), force[]
 end
 
 function simxGetJointForce(clientID, jointHandle, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
-    force = Cfloat
-    return ccall((:simxGetJointForce, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, force, operationMode), force
-end
-function simxSetJointForce(clientID, jointHandle, force::Cfloat, operationMode)
 
+    force = Ref{Cfloat}
+
+    return ccall((:simxGetJointForce, "./remoteApi.so"), Cint, (Cint, Cint, Ref{Cfloat}, Cint), clientID, jointHandle, force, operationMode), force[]
+end
+function simxSetJointForce(clientID, jointHandle, force, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
-    return ccall((:simxSetJointForce, "remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, force, operationMode)
+
+    return ccall((:simxSetJointForce, "./remoteApi.so"), Cint, (Cint, Cint, Cfloat, Cint), clientID, jointHandle, force, operationMode)
 end
 
 function simxReadForceSensor(clientID, forceSensorHandle, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
+
     state = Cuchar
     forceVector = Array{Cfloat, 1}(undef, 3)
     torqueVector = Array{Cfloat, 1}(undef, 3)
-    ret = ccall((:simxReadForceSensor, "remoteApi.so"), Cint, (Cint, Cint, Cuchar, Ref{Cfloat}, Ref{Cfloat}, Cint), clientID, forceSensorHandle, state, forceVector, torqueVector, operationMode)
-    return ret, state, forceVector, torqueVector
+
+    return ccall((:simxReadForceSensor, "./remoteApi.so"), Cint, (Cint, Cint, Cuchar, Ref{Cfloat}, Ref{Cfloat}, Cint), clientID, forceSensorHandle, state, forceVector, torqueVector, operationMode), state, forceVector, torqueVector
 end
 
 function simxBreakForceSensor(clientID, forceSensorHandle, operationMode)
     #=
     Please have a look at the function description/documentation in the V-REP user manual
     =#
-    return ccall((:simxBreakForceSensor, "remoteApi.so"), Cint, (Cint, Cint, Cint), clientID, forceSensorHandle, operationMode)
+
+    return ccall((:simxBreakForceSensor, "./remoteApi.so"), Cint, (Cint, Cint, Cint), clientID, forceSensorHandle, operationMode)
 end
 
 function simxReleaseBuffer(buffer)
@@ -121,8 +125,8 @@ function simxReadVisionSensor(clientID, sensorHandle, operationMode)
 
     auxValues2 = Array{Array{Float32, 1}, 1}()
 
-    if ret == 0 && detectionState != 0
-        if auxValuesCount[] != C_NULL && auxValuesCount[] != 0
+    if ret == 0
+        if auxValuesCount[] != C_NULL && auxValues != C_NULL
             wrapped_auxValuesCount_size = unsafe_load(auxValuesCount[], 1)
             wrapped_auxValuesCount = unsafe_wrap(Array, auxValuesCount[], 1 + wrapped_auxValuesCount_size)[2:end]
 
@@ -148,8 +152,7 @@ function simxStart(connectionAddress, connectionPort, waitUntilConnected, doNotR
     Please have a look at the function description/documentation in the V-REP user manual
     =#
 
-    ret = ccall((:simxStart, "./remoteApi.so"), Cint, (Cstring, Cint, Cuchar, Cuchar, Cint, Cint), connectionAddress, connectionPort, waitUntilConnected, doNotReconnectOnceDisconnected, timeOutInMs, commThreadCycleInMs)
-    return ret
+    return ccall((:simxStart, "./remoteApi.so"), Cint, (Cstring, Cint, Cuchar, Cuchar, Cint, Cint), connectionAddress, connectionPort, waitUntilConnected, doNotReconnectOnceDisconnected, timeOutInMs, commThreadCycleInMs)
 end
 
 function simxFinish(clientID)
@@ -158,4 +161,14 @@ function simxFinish(clientID)
     =#
 
     return ccall((:simxFinish, "./remoteApi.so"), Cvoid, (Cint,), clientID)
+end
+
+function simxGetObjectHandle(clientID, objectName, operationMode)
+    #=
+    Please have a look at the function description/documentation in the V-REP user manual
+    =#
+
+    handle = Ref{Cint}(0)
+
+    return ccall((:simxGetObjectHandle, "./remoteApi.so"), Cint, (Cint, Cstring, Ref{Cint}, Cint), clientID, objectName, handle, operationMode), handle[]
 end
